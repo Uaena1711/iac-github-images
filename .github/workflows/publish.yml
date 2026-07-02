@@ -26,7 +26,7 @@ permissions:
   packages: write               # GHCR push via GITHUB_TOKEN (forwarded by secrets: inherit)
 
 jobs:
-  build:
+  image:
     strategy:
       fail-fast: false
       matrix:
