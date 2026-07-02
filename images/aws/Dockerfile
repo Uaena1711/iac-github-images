@@ -25,7 +25,6 @@ RUN apt-get update; \
     useradd -m -u 1000 runner || true; \
     aws --version; cfn-lint --version; jq --version; git --version
 
-USER runner
 WORKDIR /work
 SHELL ["/bin/sh", "-c"]
 ENTRYPOINT []

@@ -28,7 +28,6 @@ RUN apk add --no-cache ca-certificates git curl unzip tar jq; \
     adduser -D -h /home/runner runner 2>/dev/null || true; \
     terraform version; tflint --version; terraform-docs --version; jq --version; git --version
 
-USER runner
 WORKDIR /work
 SHELL ["/bin/sh", "-c"]
 ENTRYPOINT []
