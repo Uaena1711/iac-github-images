@@ -26,18 +26,24 @@ permissions:
   packages: write               # GHCR push via GITHUB_TOKEN (forwarded by secrets: inherit)
 
 jobs:
-  image:
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          - { name: iac-github-tf,  context: images/terraform }
-          - { name: iac-github-cfn, context: images/aws }
+  # One named job per image (like the terraform consumer's dev/prod) so the graph expands into
+  # clean per-image stages: tf / checkout · tf / secret_scan · tf / lint · tf / build · tf / check.
+  tf:
     uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/docker-image-pipeline
     with:
-      image: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
-      name: ${{ matrix.image.name }}
-      context: ${{ matrix.image.context }}
+      image: ghcr.io/${{ github.repository_owner }}/iac-github-tf
+      name: iac-github-tf
+      context: images/terraform
       provider: ghcr
       platforms: linux/amd64      # GH Actions container jobs are Linux/amd64 -> no arm64, no QEMU, no --privileged
+    secrets: inherit
+
+  cfn:
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/docker-image-pipeline
+    with:
+      image: ghcr.io/${{ github.repository_owner }}/iac-github-cfn
+      name: iac-github-cfn
+      context: images/aws
+      provider: ghcr
+      platforms: linux/amd64
     secrets: inherit
