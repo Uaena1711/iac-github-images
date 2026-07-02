@@ -36,8 +36,8 @@ jobs:
     uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/docker-image-pipeline
     with:
       image: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
+      name: ${{ matrix.image.name }}
       context: ${{ matrix.image.context }}
       provider: ghcr
       platforms: linux/amd64      # GH Actions container jobs are Linux/amd64 -> no arm64, no QEMU, no --privileged
-      cache_scope: ${{ matrix.image.name }}
     secrets: inherit
