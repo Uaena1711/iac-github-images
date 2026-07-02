@@ -34,6 +34,6 @@ SHELL ["/bin/sh", "-c"]
 ENTRYPOINT []
 CMD ["/bin/sh"]
 
-LABEL org.opencontainers.image.source="https://github.com/Uaena1711/iac-github" \
+LABEL org.opencontainers.image.source="https://github.com/Uaena1711/iac-github-images" \
       org.opencontainers.image.description="terraform + tflint + terraform-docs + jq + git for iac-github tf-env/tf-docs" \
       org.opencontainers.image.licenses="MIT"
