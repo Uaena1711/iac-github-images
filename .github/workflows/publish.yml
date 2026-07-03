@@ -1,13 +1,11 @@
 # =============================================================================
-# iac-github-images :: build + push the tool images to GHCR (public).
+# iac-github-images :: build + push the tool images to GHCR (public) AND mirror to ECR.
 #
 # Two per-domain images bake the heavy CI tools so tf-env/cfn-env/tf-docs jobs install NOTHING
-# heavy at runtime (jq is the only tolerated auto-install elsewhere). Bases are GHCR public
-# (no Docker Hub / no ECR) -> no pull-rate-limit exposure at build; the published images are
-# GHCR public -> unlimited pulls.
-#
-# This is a THIN caller of the catalog's reusable docker-image.yml (provider: ghcr) — the image
-# builds dogfood iac-github instead of carrying their own build logic. One matrix leg per image.
+# heavy at runtime. Thin caller of the catalog's reusable docker-image.yml — one named job per
+# image per registry (like the terraform consumer's dev/prod), only the `provider` input differs:
+#   tf / cfn          -> GHCR   (provider: ghcr, GITHUB_TOKEN)
+#   tf-ecr / cfn-ecr  -> ECR    (provider: ecr, keyless GitHub OIDC -> AssumeRoleWithWebIdentity)
 # =============================================================================
 name: publish-images
 
@@ -23,11 +21,10 @@ on:
 
 permissions:
   contents: read
-  packages: write               # GHCR push via GITHUB_TOKEN (forwarded by secrets: inherit)
+  packages: write               # GHCR push via GITHUB_TOKEN (ghcr jobs)
+  id-token: write               # keyless AWS OIDC (ecr jobs)
 
 jobs:
-  # One named job per image (like the terraform consumer's dev/prod) so the graph expands into
-  # clean per-image stages: tf / checkout · tf / secret_scan · tf / lint · tf / build · tf / check.
   tf:
     uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
     with:
@@ -35,7 +32,7 @@ jobs:
       name: iac-github-tf
       context: images/terraform
       provider: ghcr
-      platforms: linux/amd64      # GH Actions container jobs are Linux/amd64 -> no arm64, no QEMU, no --privileged
+      platforms: linux/amd64      # GH Actions container jobs are Linux/amd64 -> no arm64, no QEMU
     secrets: inherit
 
   cfn:
@@ -45,5 +42,33 @@ jobs:
       name: iac-github-cfn
       context: images/aws
       provider: ghcr
+      platforms: linux/amd64
+    secrets: inherit
+
+  # ECR mirror — same template, provider: ecr. Keyless: the ecr provider assumes the OIDC role
+  # in-script. Repos are pre-created in the account; the role grants ecr:GetAuthorizationToken + push.
+  tf-ecr:
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
+    with:
+      image: 377521353143.dkr.ecr.us-east-1.amazonaws.com/iac-github-tf
+      name: iac-github-tf-ecr
+      context: images/terraform
+      provider: ecr
+      registry: 377521353143.dkr.ecr.us-east-1.amazonaws.com
+      aws_region: us-east-1
+      aws_role_arn: arn:aws:iam::377521353143:role/iac-github-oidc-test
+      platforms: linux/amd64
+    secrets: inherit
+
+  cfn-ecr:
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
+    with:
+      image: 377521353143.dkr.ecr.us-east-1.amazonaws.com/iac-github-cfn
+      name: iac-github-cfn-ecr
+      context: images/aws
+      provider: ecr
+      registry: 377521353143.dkr.ecr.us-east-1.amazonaws.com
+      aws_region: us-east-1
+      aws_role_arn: arn:aws:iam::377521353143:role/iac-github-oidc-test
       platforms: linux/amd64
     secrets: inherit
