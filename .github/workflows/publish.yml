@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   tf:
-    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/ecr-provider
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
     with:
       image: ghcr.io/${{ github.repository_owner }}/iac-github-tf
       name: iac-github-tf
@@ -36,7 +36,7 @@ jobs:
     secrets: inherit
 
   cfn:
-    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/ecr-provider
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
     with:
       image: ghcr.io/${{ github.repository_owner }}/iac-github-cfn
       name: iac-github-cfn
@@ -48,7 +48,7 @@ jobs:
   # ECR mirror — same template, provider: ecr. Keyless: the ecr provider assumes the OIDC role
   # in-script. Repos are pre-created in the account; the role grants ecr:GetAuthorizationToken + push.
   tf-ecr:
-    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/ecr-provider
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
     with:
       image: 377521353143.dkr.ecr.us-east-1.amazonaws.com/iac-github-tf
       name: iac-github-tf-ecr
@@ -61,7 +61,7 @@ jobs:
     secrets: inherit
 
   cfn-ecr:
-    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@feat/ecr-provider
+    uses: Uaena1711/iac-github/.github/workflows/docker-image.yml@v2
     with:
       image: 377521353143.dkr.ecr.us-east-1.amazonaws.com/iac-github-cfn
       name: iac-github-cfn-ecr
